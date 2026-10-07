@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { api } from '../boot/axios'
+import { api } from '../boot/axios.js'
 
 export const useVentaStore = defineStore('venta', {
   state: () => ({
