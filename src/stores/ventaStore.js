@@ -1,4 +1,3 @@
-```js
 import { defineStore } from 'pinia'
 import { api } from '../boot/axios'
 
@@ -137,4 +136,3 @@ export const useVentaStore = defineStore('venta', {
     }
   }
 })
-```
