@@ -1,19 +1,21 @@
 <template>
   <div style="max-width: 720px;">
+
     <!-- ENCABEZADO -->
     <div class="flex-between mb-20">
       <div>
-        <div class="page-title">Registrar cliente</div>
+        <div class="page-title">Registrar Cliente</div>
         <div class="page-subtitle">Ingreso de un nuevo pasajero</div>
       </div>
 
       <RouterLink to="/clientes" class="btn btn-ghost">
-        <ArrowLeft :size="16" /> Volver
+        <ArrowLeft :size="16" />
+        Volver
       </RouterLink>
     </div>
 
     <!-- MENSAJE DE ÉXITO -->
-    <div class="alert alert-success" v-if="exito">
+    <div v-if="exito" class="alert alert-success">
       <CheckCircle2 :size="16" />
       <span>Cliente registrado exitosamente en la base de datos.</span>
     </div>
@@ -33,7 +35,7 @@
             <select
               v-model="form.tipoDoc"
               class="form-select"
-              :class="{ error: mostrarErrores && errors.tipoDoc }"
+              :class="{ error: !exito && errors.tipoDoc }"
               @change="limpiarError('tipoDoc')"
             >
               <option value="">Seleccionar</option>
@@ -45,15 +47,16 @@
             </select>
 
             <span
+              v-if="!exito && errors.tipoDoc"
               class="form-error"
-              v-if="mostrarErrores && errors.tipoDoc"
             >
               <AlertCircle :size="14" />
               {{ errors.tipoDoc }}
             </span>
           </div>
 
-          <!-- DOCUMENTO -->
+
+          <!-- NÚMERO DE DOCUMENTO -->
           <div class="form-group">
             <label class="form-label">
               Número de documento *
@@ -62,21 +65,22 @@
             <input
               v-model="form.documento"
               class="form-input"
-              :class="{ error: mostrarErrores && errors.documento }"
+              :class="{ error: !exito && errors.documento }"
               placeholder="Ej: 12345678"
               @input="limpiarError('documento')"
             />
 
             <span
+              v-if="!exito && errors.documento"
               class="form-error"
-              v-if="mostrarErrores && errors.documento"
             >
               <AlertCircle :size="14" />
               {{ errors.documento }}
             </span>
           </div>
 
-          <!-- NOMBRE -->
+
+          <!-- NOMBRE COMPLETO -->
           <div class="form-group full-width">
             <label class="form-label">
               Nombre completo *
@@ -85,19 +89,20 @@
             <input
               v-model="form.nombre"
               class="form-input"
-              :class="{ error: mostrarErrores && errors.nombre }"
+              :class="{ error: !exito && errors.nombre }"
               placeholder="Nombre y apellidos"
               @input="limpiarError('nombre')"
             />
 
             <span
+              v-if="!exito && errors.nombre"
               class="form-error"
-              v-if="mostrarErrores && errors.nombre"
             >
               <AlertCircle :size="14" />
               {{ errors.nombre }}
             </span>
           </div>
+
 
           <!-- TELÉFONO -->
           <div class="form-group">
@@ -108,19 +113,20 @@
             <input
               v-model="form.telefono"
               class="form-input"
-              :class="{ error: mostrarErrores && errors.telefono }"
+              :class="{ error: !exito && errors.telefono }"
               placeholder="Ej: 3001234567"
               @input="limpiarError('telefono')"
             />
 
             <span
+              v-if="!exito && errors.telefono"
               class="form-error"
-              v-if="mostrarErrores && errors.telefono"
             >
               <AlertCircle :size="14" />
               {{ errors.telefono }}
             </span>
           </div>
+
 
           <!-- CORREO -->
           <div class="form-group">
@@ -132,19 +138,20 @@
               v-model="form.correo"
               type="email"
               class="form-input"
-              :class="{ error: mostrarErrores && errors.correo }"
+              :class="{ error: !exito && errors.correo }"
               placeholder="correo@mail.com"
               @input="limpiarError('correo')"
             />
 
             <span
+              v-if="!exito && errors.correo"
               class="form-error"
-              v-if="mostrarErrores && errors.correo"
             >
               <AlertCircle :size="14" />
               {{ errors.correo }}
             </span>
           </div>
+
 
           <!-- DIRECCIÓN -->
           <div class="form-group full-width">
@@ -155,14 +162,14 @@
             <input
               v-model="form.direccion"
               class="form-input"
-              :class="{ error: mostrarErrores && errors.direccion }"
+              :class="{ error: !exito && errors.direccion }"
               placeholder="Dirección de residencia"
               @input="limpiarError('direccion')"
             />
 
             <span
+              v-if="!exito && errors.direccion"
               class="form-error"
-              v-if="mostrarErrores && errors.direccion"
             >
               <AlertCircle :size="14" />
               {{ errors.direccion }}
@@ -170,6 +177,7 @@
           </div>
 
         </div>
+
 
         <!-- BOTONES -->
         <div class="flex gap-12">
@@ -194,11 +202,14 @@
 
       </form>
     </div>
+
   </div>
 </template>
 
+
 <script setup>
 import { ref, reactive } from 'vue'
+
 import {
   ArrowLeft,
   CheckCircle2,
@@ -208,7 +219,9 @@ import {
 
 import { useClienteStore } from '../stores/clienteStore.js'
 
+
 const store = useClienteStore()
+
 
 /*
 |--------------------------------------------------------------------------
@@ -225,6 +238,7 @@ const form = reactive({
   direccion: ''
 })
 
+
 /*
 |--------------------------------------------------------------------------
 | ERRORES
@@ -233,37 +247,34 @@ const form = reactive({
 
 const errors = reactive({})
 
+
 /*
 |--------------------------------------------------------------------------
-| ESTADOS
+| ESTADO DE ÉXITO
 |--------------------------------------------------------------------------
 */
 
 const exito = ref(false)
 
-/*
- * Este estado controla cuándo se muestran
- * las validaciones.
- */
-const mostrarErrores = ref(false)
 
 /*
 |--------------------------------------------------------------------------
-| VALIDAR
+| VALIDAR FORMULARIO
 |--------------------------------------------------------------------------
 */
 
 function validar() {
-  // Primero limpiamos los errores anteriores
   limpiarErrores()
 
   let valido = true
 
+  // Tipo de documento
   if (!form.tipoDoc) {
     errors.tipoDoc = 'El tipo de documento es obligatorio.'
     valido = false
   }
 
+  // Documento
   if (!form.documento.trim()) {
     errors.documento = 'El documento es obligatorio.'
     valido = false
@@ -272,21 +283,28 @@ function validar() {
     valido = false
   }
 
+  // Nombre
   if (!form.nombre.trim()) {
     errors.nombre = 'El nombre es obligatorio.'
     valido = false
   }
 
+  // Teléfono
   if (!form.telefono.trim()) {
     errors.telefono = 'El teléfono es obligatorio.'
     valido = false
   }
 
+  // Correo
   if (!form.correo.trim()) {
     errors.correo = 'El correo es obligatorio.'
     valido = false
+  } else if (!correoValido(form.correo.trim())) {
+    errors.correo = 'Ingrese un correo electrónico válido.'
+    valido = false
   }
 
+  // Dirección
   if (!form.direccion.trim()) {
     errors.direccion = 'La dirección es obligatoria.'
     valido = false
@@ -295,34 +313,35 @@ function validar() {
   return valido
 }
 
+
 /*
 |--------------------------------------------------------------------------
-| GUARDAR
+| VALIDAR CORREO
+|--------------------------------------------------------------------------
+*/
+
+function correoValido(correo) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return regex.test(correo)
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| GUARDAR CLIENTE
 |--------------------------------------------------------------------------
 */
 
 function guardar() {
-  /*
-   * Cada vez que se intenta guardar,
-   * habilitamos la visualización de errores.
-   */
-  mostrarErrores.value = true
-
-  /*
-   * Ocultamos el mensaje de éxito anterior.
-   */
+  // Ocultar mensaje de éxito anterior
   exito.value = false
 
-  /*
-   * Validamos.
-   */
+  // Validar
   if (!validar()) {
     return
   }
 
-  /*
-   * Guardamos el cliente.
-   */
+  // Registrar cliente
   store.registrarCliente({
     tipoDoc: form.tipoDoc,
     documento: form.documento.trim(),
@@ -333,23 +352,23 @@ function guardar() {
   })
 
   /*
-   * =====================================================
-   * GUARDADO CORRECTO
-   * =====================================================
+   * IMPORTANTE:
+   * Si el cliente se registró correctamente,
+   * eliminamos todos los errores.
    */
-
-  // Limpiamos TODOS los errores
   limpiarErrores()
 
-  // Dejamos de mostrar validaciones
-  mostrarErrores.value = false
-
-  // Limpiamos los campos
+  /*
+   * Limpiamos el formulario.
+   */
   limpiarCampos()
 
-  // Mostramos únicamente el mensaje de éxito
+  /*
+   * Mostramos el mensaje de éxito.
+   */
   exito.value = true
 }
+
 
 /*
 |--------------------------------------------------------------------------
@@ -368,6 +387,7 @@ function limpiarCampos() {
   })
 }
 
+
 /*
 |--------------------------------------------------------------------------
 | LIMPIAR ERRORES
@@ -380,21 +400,28 @@ function limpiarErrores() {
   })
 }
 
+
 /*
 |--------------------------------------------------------------------------
-| LIMPIAR ERROR INDIVIDUAL
+| LIMPIAR ERROR DE UN CAMPO
 |--------------------------------------------------------------------------
 */
 
 function limpiarError(campo) {
-  /*
-   * Si el usuario empieza a corregir un campo,
-   * quitamos inmediatamente su error.
-   */
   if (errors[campo]) {
     delete errors[campo]
   }
+
+  /*
+   * Si el usuario empieza a modificar el formulario
+   * después de haber guardado, quitamos el mensaje
+   * de éxito.
+   */
+  if (exito.value) {
+    exito.value = false
+  }
 }
+
 
 /*
 |--------------------------------------------------------------------------
@@ -403,16 +430,9 @@ function limpiarError(campo) {
 */
 
 function limpiar() {
-  // Limpiar campos
   limpiarCampos()
-
-  // Limpiar errores
   limpiarErrores()
 
-  // Ocultar errores
-  mostrarErrores.value = false
-
-  // Ocultar mensaje de éxito
   exito.value = false
 }
 </script>
