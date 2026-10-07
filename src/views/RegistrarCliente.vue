@@ -4,7 +4,7 @@
     <!-- ENCABEZADO -->
     <div class="flex-between mb-20">
       <div>
-        <div class="page-title">Registrar Cliente</div>
+        <div class="page-title">Registrar cliente</div>
         <div class="page-subtitle">Ingreso de un nuevo pasajero</div>
       </div>
 
@@ -14,11 +14,13 @@
       </RouterLink>
     </div>
 
+
     <!-- MENSAJE DE ÉXITO -->
     <div v-if="exito" class="alert alert-success">
       <CheckCircle2 :size="16" />
       <span>Cliente registrado exitosamente en la base de datos.</span>
     </div>
+
 
     <!-- FORMULARIO -->
     <div class="card">
@@ -35,7 +37,7 @@
             <select
               v-model="form.tipoDoc"
               class="form-select"
-              :class="{ error: !exito && errors.tipoDoc }"
+              :class="{ error: errors.tipoDoc }"
               @change="limpiarError('tipoDoc')"
             >
               <option value="">Seleccionar</option>
@@ -47,7 +49,7 @@
             </select>
 
             <span
-              v-if="!exito && errors.tipoDoc"
+              v-if="errors.tipoDoc"
               class="form-error"
             >
               <AlertCircle :size="14" />
@@ -65,13 +67,13 @@
             <input
               v-model="form.documento"
               class="form-input"
-              :class="{ error: !exito && errors.documento }"
+              :class="{ error: errors.documento }"
               placeholder="Ej: 12345678"
               @input="limpiarError('documento')"
             />
 
             <span
-              v-if="!exito && errors.documento"
+              v-if="errors.documento"
               class="form-error"
             >
               <AlertCircle :size="14" />
@@ -80,7 +82,7 @@
           </div>
 
 
-          <!-- NOMBRE COMPLETO -->
+          <!-- NOMBRE -->
           <div class="form-group full-width">
             <label class="form-label">
               Nombre completo *
@@ -89,13 +91,13 @@
             <input
               v-model="form.nombre"
               class="form-input"
-              :class="{ error: !exito && errors.nombre }"
+              :class="{ error: errors.nombre }"
               placeholder="Nombre y apellidos"
               @input="limpiarError('nombre')"
             />
 
             <span
-              v-if="!exito && errors.nombre"
+              v-if="errors.nombre"
               class="form-error"
             >
               <AlertCircle :size="14" />
@@ -113,13 +115,13 @@
             <input
               v-model="form.telefono"
               class="form-input"
-              :class="{ error: !exito && errors.telefono }"
+              :class="{ error: errors.telefono }"
               placeholder="Ej: 3001234567"
               @input="limpiarError('telefono')"
             />
 
             <span
-              v-if="!exito && errors.telefono"
+              v-if="errors.telefono"
               class="form-error"
             >
               <AlertCircle :size="14" />
@@ -138,13 +140,13 @@
               v-model="form.correo"
               type="email"
               class="form-input"
-              :class="{ error: !exito && errors.correo }"
+              :class="{ error: errors.correo }"
               placeholder="correo@mail.com"
               @input="limpiarError('correo')"
             />
 
             <span
-              v-if="!exito && errors.correo"
+              v-if="errors.correo"
               class="form-error"
             >
               <AlertCircle :size="14" />
@@ -162,13 +164,13 @@
             <input
               v-model="form.direccion"
               class="form-input"
-              :class="{ error: !exito && errors.direccion }"
+              :class="{ error: errors.direccion }"
               placeholder="Dirección de residencia"
               @input="limpiarError('direccion')"
             />
 
             <span
-              v-if="!exito && errors.direccion"
+              v-if="errors.direccion"
               class="form-error"
             >
               <AlertCircle :size="14" />
@@ -241,7 +243,7 @@ const form = reactive({
 
 /*
 |--------------------------------------------------------------------------
-| ERRORES
+| ERRORES DE VALIDACIÓN
 |--------------------------------------------------------------------------
 */
 
@@ -250,7 +252,7 @@ const errors = reactive({})
 
 /*
 |--------------------------------------------------------------------------
-| ESTADO DE ÉXITO
+| MENSAJE DE ÉXITO
 |--------------------------------------------------------------------------
 */
 
@@ -264,9 +266,12 @@ const exito = ref(false)
 */
 
 function validar() {
+
+  // Eliminar errores anteriores
   limpiarErrores()
 
   let valido = true
+
 
   // Tipo de documento
   if (!form.tipoDoc) {
@@ -274,41 +279,61 @@ function validar() {
     valido = false
   }
 
+
   // Documento
   if (!form.documento.trim()) {
+
     errors.documento = 'El documento es obligatorio.'
     valido = false
+
   } else if (store.documentoExiste(form.documento.trim())) {
+
     errors.documento = 'Este documento ya está registrado.'
     valido = false
+
   }
+
 
   // Nombre
   if (!form.nombre.trim()) {
+
     errors.nombre = 'El nombre es obligatorio.'
     valido = false
+
   }
+
 
   // Teléfono
   if (!form.telefono.trim()) {
+
     errors.telefono = 'El teléfono es obligatorio.'
     valido = false
+
   }
+
 
   // Correo
   if (!form.correo.trim()) {
+
     errors.correo = 'El correo es obligatorio.'
     valido = false
+
   } else if (!correoValido(form.correo.trim())) {
+
     errors.correo = 'Ingrese un correo electrónico válido.'
     valido = false
+
   }
+
 
   // Dirección
   if (!form.direccion.trim()) {
+
     errors.direccion = 'La dirección es obligatoria.'
     valido = false
+
   }
+
 
   return valido
 }
@@ -333,39 +358,60 @@ function correoValido(correo) {
 */
 
 function guardar() {
-  // Ocultar mensaje de éxito anterior
-  exito.value = false
 
-  // Validar
+  /*
+   * Primero validamos.
+   *
+   * Si hay algún campo vacío,
+   * aparecen las alertas.
+   */
   if (!validar()) {
     return
   }
 
-  // Registrar cliente
+
+  /*
+   * Registrar cliente
+   */
   store.registrarCliente({
+
     tipoDoc: form.tipoDoc,
+
     documento: form.documento.trim(),
+
     nombre: form.nombre.trim(),
+
     telefono: form.telefono.trim(),
+
     correo: form.correo.trim(),
+
     direccion: form.direccion.trim()
+
   })
 
+
   /*
-   * IMPORTANTE:
-   * Si el cliente se registró correctamente,
-   * eliminamos todos los errores.
+   * =====================================================
+   * REGISTRO EXITOSO
+   * =====================================================
+   *
+   * Aquí está la parte importante:
+   *
+   * 1. Borramos los errores.
+   * 2. Limpiamos los campos.
+   * 3. Dejamos activo el mensaje verde.
    */
+
+
+  // Quitar alertas rojas
   limpiarErrores()
 
-  /*
-   * Limpiamos el formulario.
-   */
+
+  // Limpiar formulario
   limpiarCampos()
 
-  /*
-   * Mostramos el mensaje de éxito.
-   */
+
+  // Mostrar mensaje verde
   exito.value = true
 }
 
@@ -377,14 +423,23 @@ function guardar() {
 */
 
 function limpiarCampos() {
+
   Object.assign(form, {
+
     tipoDoc: '',
+
     documento: '',
+
     nombre: '',
+
     telefono: '',
+
     correo: '',
+
     direccion: ''
+
   })
+
 }
 
 
@@ -395,31 +450,30 @@ function limpiarCampos() {
 */
 
 function limpiarErrores() {
+
   Object.keys(errors).forEach(key => {
+
     delete errors[key]
+
   })
+
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| LIMPIAR ERROR DE UN CAMPO
+| LIMPIAR ERROR INDIVIDUAL
 |--------------------------------------------------------------------------
 */
 
 function limpiarError(campo) {
+
   if (errors[campo]) {
+
     delete errors[campo]
+
   }
 
-  /*
-   * Si el usuario empieza a modificar el formulario
-   * después de haber guardado, quitamos el mensaje
-   * de éxito.
-   */
-  if (exito.value) {
-    exito.value = false
-  }
 }
 
 
@@ -430,9 +484,15 @@ function limpiarError(campo) {
 */
 
 function limpiar() {
+
   limpiarCampos()
+
   limpiarErrores()
 
+  /*
+   * El botón "Limpiar" también oculta
+   * el mensaje verde.
+   */
   exito.value = false
 }
 </script>
