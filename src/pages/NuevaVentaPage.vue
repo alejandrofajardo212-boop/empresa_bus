@@ -350,17 +350,24 @@
                   </div>
                 </div>
 
-                <q-separator class="q-my-md" />
-                <div class="q-mb-md">
-                  <q-input
-                    v-model="descripcionOpcional"
-                    outlined
-                    dense
-                    type="textarea"
-                    rows="2"
-                    label="Descripción o nota (opcional)"
-                  />
-                </div>
+               async function confirmarVenta() {
+  errorVenta.value = ''
+  try {
+    // 1. Llamada asíncrona a la tienda pasando los datos requeridos por la API
+    const nueva = await ventaStore.crearVenta({
+      tripId: viajeSeleccionado.value._id || viajeSeleccionado.value.id,
+      seatNumber: puestoSeleccionado.value.numero,
+      customerName: clienteSeleccionado.value.nombre,
+      customerDoc: clienteSeleccionado.value.documento
+    })
+    
+    ventaCreada.value = nueva
+    paso.value = 5
+  } catch (e) {
+    // Captura el mensaje retornado por su controlador de backend en Render
+    errorVenta.value = e.response?.data?.message || e.message
+  }
+}
 
                 <div v-if="errorVenta" class="q-mt-md">
                   <q-banner class="bg-red-1 text-negative rounded-borders" rounded>
