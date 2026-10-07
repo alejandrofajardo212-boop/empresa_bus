@@ -76,54 +76,60 @@ export const useVentaStore = defineStore('venta', {
     },
 
     // Crear una nueva venta y guardarla en el backend
-    async crearVenta(datos) {
-      try {
-        const respuesta = await api.post('/bookings', {
-          tripId: datos.viajeId,
-          seatNumber: Number(datos.puestoId),
-          customerName: datos.clienteNombre,
-          customerDoc: datos.clienteDoc
-        })
+async crearVenta(datos) {
+  try {
+    // Acepta tanto tripId/viajeId, seatNumber/puestoId, etc.
+    const tripId = datos.tripId || datos.viajeId
+    const seatNumber = Number(datos.seatNumber || datos.puestoId)
+    const customerName = datos.customerName || datos.clienteNombre
+    const customerDoc = datos.customerDoc || datos.clienteDoc
 
-        const tiqueteDB = respuesta.data?.data
+    const respuesta = await api.post('/bookings', {
+      tripId,
+      seatNumber,
+      customerName,
+      customerDoc
+    })
 
-        if (!tiqueteDB) {
-          throw new Error(
-            'El backend no devolvió la información del tiquete'
-          )
-        }
+    const tiqueteDB = respuesta.data?.data
 
-        const nuevaVenta = {
-          id: tiqueteDB.ticketCode,
-          _id: tiqueteDB._id,
-          viajeId: tiqueteDB.trip?._id || tiqueteDB.trip,
-          clienteNombre: tiqueteDB.customerName,
-          clienteDoc: tiqueteDB.customerDoc,
-          puestoId: tiqueteDB.seatNumber,
-          precio: Number(tiqueteDB.totalAmount) || 0,
-          fechaVenta: tiqueteDB.createdAt
-            ? new Date(tiqueteDB.createdAt).toLocaleString()
-            : '',
-          estado: 'Pagado'
-        }
+    if (!tiqueteDB) {
+      throw new Error(
+        'El backend no devolvió la información del tiquete'
+      )
+    }
 
-        this.ventas.push(nuevaVenta)
+    const nuevaVenta = {
+      id: tiqueteDB.ticketCode,
+      _id: tiqueteDB._id,
+      viajeId: tiqueteDB.trip?._id || tiqueteDB.trip,
+      clienteNombre: tiqueteDB.customerName,
+      clienteDoc: tiqueteDB.customerDoc,
+      puestoId: tiqueteDB.seatNumber,
+      precio: Number(tiqueteDB.totalAmount) || 0,
+      fechaVenta: tiqueteDB.createdAt
+        ? new Date(tiqueteDB.createdAt).toLocaleString()
+        : '',
+      estado: 'Pagado'
+    }
 
-        return nuevaVenta
-      } catch (error) {
-        console.error(
-          'Error al crear la venta:',
-          error
-        )
+    this.ventas.push(nuevaVenta)
 
-        const mensajeError =
-          error.response?.data?.message ||
-          error.message ||
-          'No se pudo crear la venta'
+    return nuevaVenta
+  } catch (error) {
+    console.error(
+      'Error al crear la venta:',
+      error
+    )
 
-        throw new Error(mensajeError)
-      }
-    },
+    const mensajeError =
+      error.response?.data?.message ||
+      error.message ||
+      'No se pudo crear la venta'
+
+    throw new Error(mensajeError)
+  }
+}
 
     obtenerVenta(id) {
       return (
